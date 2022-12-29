@@ -23,8 +23,9 @@ with models.DAG(
     default_args=default_args,
     start_date=START_DATE,
     catchup=False,
-    # tags=["example"]
 ) as dag_native_python:
+
+    # run the beam batch job to move pkl files to bigquery
     start_python_job = BeamRunPythonPipelineOperator(
         task_id = "move-pkl-files-to-bigquery",
         runner="DataflowRunner",

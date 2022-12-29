@@ -29,7 +29,7 @@ SCHEMA = ','.join([
 class ReadGcsBlobs(beam.DoFn):
     def process(self, element):
         from apache_beam.io.gcp import gcsio
-        import pickle, json
+        import pickle
         gcs = gcsio.GcsIO()
         result = pickle.load(gcs.open(element), encoding='utf-8')
         records = result.to_dict(orient='records')
@@ -54,7 +54,7 @@ def run(argv=None, save_main_session=True):
             | fileio.MatchFiles(f'{RAWDATA_BUCKET}/*.pkl')
             | fileio.ReadMatches()
             | beam.Reshuffle()
-        
+        )
 
         file_records = (
             pickle_files
