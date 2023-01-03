@@ -4,7 +4,7 @@ import apache_beam as beam
 import apache_beam.io.fileio as fileio
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
-from apache_beam.runners import DirectRunner
+# from apache_beam.runners import DirectRunner
 
 PROJECT_ID = 'hardy-unison-369003'
 REGION = 'us-west4'
