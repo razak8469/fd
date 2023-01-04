@@ -17,7 +17,7 @@ gcloud ai endpoints create --project={{ params.PROJECT_ID }} --region={{ params.
     --endpoint-id={{ params.ENDPOINT_ID }} --display-name={{ params.ENDPOINT_NAME }} &
    
 # deploy model to endpoint
-!gcloud ai endpoints deploy-model {{ params.ENDPOINT_ID }} \
+gcloud ai endpoints deploy-model {{ params.ENDPOINT_ID }} \
     --project={{ params.PROJECT_ID }} \
     --region={{ params.REGION }} \
     --model={{ params.MODEL_ID }} \
