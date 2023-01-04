@@ -5,6 +5,7 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 from scripts.publish_to_pubsub import publish_to_pubsub
 
+
 def publish_transactions(dag: DAG, **kwargs) -> TaskGroup:
     PROJECT_ID = kwargs.get("PROJECT_ID", None)
     DATASET_OUT = kwargs.get("DATASET_OUT", None)
@@ -60,6 +61,7 @@ def publish_transactions(dag: DAG, **kwargs) -> TaskGroup:
 
     publish_to_pubsub_task = PythonOperator(
         task_id="publish_to_pubsub_task",
+        task_group=publish_transactions_group,
         python_callable=publish_to_pubsub,
         op_kwargs = {
             'PROJECT_ID': PROJECT_ID,

@@ -36,9 +36,9 @@ with DAG(
         "STREAMING_PIPELINE_CODE": STREAMING_PIPELINE_CODE,
     }
 
-    # ingest_data_task = ingest_data(dag=dag, kwargs=kwargs)
+    ingest_data_task = ingest_data(dag=dag, kwargs=kwargs)
 
-    # create_model_taskgroup = create_model(dag=dag, kwargs=kwargs)
+    create_model_taskgroup = create_model(dag=dag, kwargs=kwargs)
 
     deploy_model_task = deploy_model(dag=dag, kwargs=kwargs)
 
@@ -46,7 +46,8 @@ with DAG(
 
     predict_fraud_task = predict_fraud(dag=dag, kwargs=kwargs)
 
-    # ingest_data_task >> create_model_taskgroup >> deploy_model_task
+    ingest_data_task >> create_model_taskgroup >> deploy_model_task
 
-    [deploy_model_task, publish_transactions_taskgroup] >> predict_fraud_task
+    deploy_model_task >> predict_fraud_task
+    publish_transactions_taskgroup >> predict_fraud_task
     

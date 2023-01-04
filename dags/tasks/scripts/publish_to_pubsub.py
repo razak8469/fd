@@ -30,4 +30,4 @@ def publish_to_pubsub(**kwargs):
         publish_futures.append(future)
 
     futures.wait(publish_futures, return_when=futures.ALL_COMPLETED)
-
+    return
