@@ -1,16 +1,17 @@
+
 from airflow import DAG
 from airflow.providers.apache.beam.operators.beam import BeamRunPythonPipelineOperator
 
-def ingest_data(dag: DAG, **kwargs) -> BeamRunPythonPipelineOperator:
-    BATCH_PIPELINE_CODE = kwargs.get('BATCH_PIPELINE_CODE')
+def predict_fraud(dag: DAG, **kwargs) -> BeamRunPythonPipelineOperator: 
+    STREAMING_PIPELINE_CODE = kwargs.get('STREAMING_PIPELINE_CODE')
     TEMP_LOCATION = kwargs.get('TEMP_LOCATION')
     STAGING_LOCATION = kwargs.get('STAGING_LOCATION')
     REGION = kwargs.get('REGION')
-    
-    ingest_data_task = BeamRunPythonPipelineOperator(
-        task_id = "ingest_data_task",
+
+    predict_fraud_task = BeamRunPythonPipelineOperator(
+        task_id = "predict_fraud_task",
         runner="DataflowRunner",
-        py_file=BATCH_PIPELINE_CODE,
+        py_file=STREAMING_PIPELINE_CODE,
         pipeline_options={
             "temp_location": TEMP_LOCATION,
             "staging_location": STAGING_LOCATION,
@@ -19,9 +20,9 @@ def ingest_data(dag: DAG, **kwargs) -> BeamRunPythonPipelineOperator:
         py_interpreter='python3',
         py_system_site_packages=False,
         dataflow_config={
-            "job_name": "pkl-data-ingestion",
+            "job_name": "streaming-ml-inference",
             "location": REGION,
             "wait_until_finished": False,
         },
     )
-    return ingest_data_task
+    return predict_fraud_task

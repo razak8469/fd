@@ -3,6 +3,8 @@ from airflow.utils.dates import days_ago
 from tasks.ingest_data import ingest_data
 from tasks.create_model import  create_model
 from tasks.deploy_model import deploy_model
+from tasks.publish_transactions import publish_transactions
+from tasks.predict_fraud import predict_fraud
 
 
 with DAG(
@@ -19,7 +21,8 @@ with DAG(
     STAGING_BUCKET = f'{SOURCE_BUCKET}/staging'
     DATASET_OUT = "{{var.value.dataset_out}}"
     TABLE_OUT = "{{var.value.table_out}}"
-    PIPELINE_CODE = "{{var.value.pipeline_code}}"
+    BATCH_PIPELINE_CODE = "{{var.value.batch_pipeline_code}}"
+    STREAMING_PIPELINE_CODE = "{{var.value.streaming_pipeline_code}}"
 
     kwargs = {
         "PROJECT_ID": PROJECT_ID,
@@ -29,16 +32,21 @@ with DAG(
         "STAGING_BUCKET": STAGING_BUCKET,
         "DATASET_OUT": DATASET_OUT,
         "TABLE_OUT": TABLE_OUT,
-        "PIPELINE_CODE": PIPELINE_CODE,
+        "BATCH_PIPELINE_CODE": BATCH_PIPELINE_CODE,
+        "STREAMING_PIPELINE_CODE": STREAMING_PIPELINE_CODE,
     }
 
-    ingest_data_task = ingest_data(dag=dag, kwargs=kwargs)
+    # ingest_data_task = ingest_data(dag=dag, kwargs=kwargs)
 
-    create_model_taskgroup = create_model(dag=dag, kwargs=kwargs)
+    # create_model_taskgroup = create_model(dag=dag, kwargs=kwargs)
 
     deploy_model_task = deploy_model(dag=dag, kwargs=kwargs)
 
-    ingest_data_task >> create_model_taskgroup >> deploy_model_task
+    publish_transactions_taskgroup = publish_transactions(dag=dag, kwargs=kwargs)
 
-    # [deploy_model_task, publish_transactions_taskgroup] >> predict_fraud_task
+    predict_fraud_task = predict_fraud(dag=dag, kwargs=kwargs)
+
+    # ingest_data_task >> create_model_taskgroup >> deploy_model_task
+
+    [deploy_model_task, publish_transactions_taskgroup] >> predict_fraud_task
     

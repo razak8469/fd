@@ -2,24 +2,24 @@ import json
 from google.cloud import bigquery, pubsub_v1
 from concurrent import futures
 
-def publish_simulated_transactions(**kwargs):
-    project_id = kwargs.get('project_id', None)
-    dataset = kwargs.get('dataset', None)
-    table = kwargs.get('table', None)
-    topic = kwargs.get('topic', None)
+def publish_to_pubsub(**kwargs):
+    PROJECT_ID = kwargs.get('PROJECT_ID', None)
+    DATASET = kwargs.get('DATASET', None)
+    TABLE = kwargs.get('TABLE', None)
+    TOPIC = kwargs.get('TOPIC', None)
 
     query = f"""
         SELECT 
             * EXCEPT (TX_DATETIME),
             UNIX_SECONDS(TX_DATETIME) as TX_DATETIME
         FROM 
-            {dataset}.{table}
+            {DATASET}.{TABLE}
         ORDER BY
             TX_DATETIME
     """
 
     publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(project_id, topic)
+    topic_path = publisher.topic_path(PROJECT_ID, TOPIC)
     publish_futures = []
 
     client = bigquery.Client()
