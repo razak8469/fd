@@ -41,7 +41,7 @@ This workflow comprises the tasks for real-time credit fraud detection of the ne
 <img src="doc/images/inference_workflow.png"  width="800" height="250">
 
 ##### Publish Transactions Group (dags/tasks/publish_transactions.py)
-This task group uses the ingestion and feature extraction tasks like in the model creation workflow but works on the latest transactions data. The publish_to_pubsub task uses a PythonOperator (dags/tasks/scripts/publish_to_pubsub.py) to extract these transformed features from BigQuery and publish it to a PubSub topic.
+This task group uses the ingestion and feature extraction tasks like in the model creation workflow but works on the latest transactions data. The publish_to_pubsub task uses a PythonOperator to extract these transformed features from BigQuery and publish it to a PubSub topic.
 
 ##### Predict Fraud Task (dags/tasks/predict_fraud.py)
 This task uses a BeamRunPythonPipelineOperator to run a steaming Dataflow job (source/streaming_ml_inference.py). The task retrieves the transformed transaction features from the PubSub and use it to invoke the deployed model to make predictions. On predicting a fraudulent transaction, the transaction details are pushed to a fraud notification topic. The non-fraudulent transactions are written into a BigQuery table. Also any transaction that results in error during the process is published to a error notification topic. 
