@@ -1,12 +1,44 @@
+import json
+from google.cloud import bigquery, pubsub_v1
+from concurrent import futures
+
 from airflow import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.providers.apache.beam.operators.beam import BeamRunPythonPipelineOperator
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
-from scripts.publish_to_pubsub import publish_to_pubsub
 
+def publish_to_pubsub(**kwargs):
+    PROJECT_ID = kwargs.get('PROJECT_ID', None)
+    DATASET = kwargs.get('DATASET', None)
+    TABLE = kwargs.get('TABLE', None)
+    TOPIC = kwargs.get('TOPIC', None)
+
+    query = f"""
+        SELECT 
+            * EXCEPT (TX_DATETIME),
+            UNIX_SECONDS(TX_DATETIME) as TX_DATETIME
+        FROM 
+            {DATASET}.{TABLE}
+        ORDER BY
+            TX_DATETIME
+    """
+
+    publisher = pubsub_v1.PublisherClient()
+    topic_path = publisher.topic_path(PROJECT_ID, TOPIC)
+    publish_futures = []
+
+    client = bigquery.Client()
+    txns_query = client.query(query)
+    for txn in txns_query:
+        message = json.dumps(dict(txn)).encode('utf-8')
+        future = publisher.publish(topic_path, message)
+        publish_futures.append(future)
+
+    futures.wait(publish_futures, return_when=futures.ALL_COMPLETED)
 
 def publish_transactions(dag: DAG, **kwargs) -> TaskGroup:
+
     PROJECT_ID = kwargs.get("PROJECT_ID", None)
     DATASET_OUT = kwargs.get("DATASET_OUT", None)
     TABLE_OUT = kwargs.get('TABLE_OUT', None)
@@ -68,7 +100,7 @@ def publish_transactions(dag: DAG, **kwargs) -> TaskGroup:
             'DATASET': TRANSACTIONS_DATASET,
             'TABLE': NEW_TRANSACTIONS_TABLE,
             'TOPIC': STREAMING_TRANSACTIONS_TOPIC,
-        }
+        },
     )
 
     ingest_transactions_task >> extract_transactions_features_task >> publish_to_pubsub_task
